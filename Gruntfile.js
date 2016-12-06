@@ -3,13 +3,22 @@ module.exports = function(grunt) {
 
   var jsFiles = grunt.file.expand('src/es6/*.js');
   var htmlFiles = grunt.file.expand('src/*.html');
+  var buildFolder = 'build/';
   var htmlminFiles = {};
+  var htmlInlineOptions = {};
   var uglifyOptions = {};
   var rollupOptions = {};
 
   htmlFiles.forEach(function(file) {
     var filename = file.split('/').pop();
-    htmlminFiles['build/' + filename] = 'build/' + filename;
+    htmlminFiles[buildFolder + filename] = buildFolder + filename;
+    htmlInlineOptions[filename] = {
+      options: {
+        uglify: true
+      },
+      src: buildFolder + filename,
+      dist: buildFolder + filename
+    };
   });
 
   jsFiles.forEach(function(file) {
@@ -17,7 +26,7 @@ module.exports = function(grunt) {
     var uglifyFiles = {};
     var rollupFiles = {};
 
-    uglifyFiles['build/js/' + filename] = ['build/js/' + filename];
+    uglifyFiles[buildFolder + 'js/' + filename] = [buildFolder + 'js/' + filename];
     rollupFiles['src/js/' + filename] = ['src/es6/' + filename];
 
     uglifyOptions[filename.replace('.js', '')] = {
@@ -43,7 +52,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
-    clean: ['build', 'src/css', 'src/js', '*.zip'],
+    clean: ['src/css', 'src/js', '*.zip'],
 
     jshint: {
       all: ['Gruntfile.js', 'es6/**/*.js', 'js/**/*.js']
@@ -62,7 +71,7 @@ module.exports = function(grunt) {
         files: [{
           expand: true,
           cwd: 'src/sass',
-          src: '**/*.scss',
+          src: '*.scss',
           dest: 'src/css',
           ext: '.css'
         }]
@@ -73,7 +82,7 @@ module.exports = function(grunt) {
 
     watch: {
       scripts: {
-        files: ['src/es6/*.js', 'src/es6/modules/*.js', '../common/es6/**/*.js', 'Gruntfile.js'],
+        files: ['src/es6/*.js', 'src/es6/**/*.js', '../common/es6/**/*.js', 'Gruntfile.js'],
         tasks: ['jshint', 'rollup', 'copy:js']
       },
       styles: {
@@ -83,10 +92,6 @@ module.exports = function(grunt) {
       html: {
         files: ['src/*.html'],
         tasks: ['copy:html']
-      },
-      json: {
-        files: ['src/**/*.json'],
-        tasks: ['copy:json']
       }
     },
 
@@ -96,9 +101,9 @@ module.exports = function(grunt) {
       build: {
         files: [{
           expand: true,
-          cwd: 'build/css',
+          cwd: buildFolder + 'css',
           src: '**/*.css',
-          dest: 'build/css'
+          dest: buildFolder + 'css'
         }]
       }
     },
@@ -107,9 +112,9 @@ module.exports = function(grunt) {
       dynamic: {
         files: [{
           expand: true,
-          cwd: 'build',
+          cwd: buildFolder,
           src: ['**/*.{png,jpg,gif,ico}'],
-          dest: 'build/'
+          dest: buildFolder
         }]
       }
     },
@@ -119,13 +124,12 @@ module.exports = function(grunt) {
         options: {
           removeComments: true,
           collapseWhitespace: true,
-          removeRedundantAttributes: true,
-          minifyJS: true,
-          minifyCSS: true
         },
         files: htmlminFiles
       }
     },
+
+    inline: htmlInlineOptions,
 
     copy: {
       release: {
@@ -138,25 +142,19 @@ module.exports = function(grunt) {
         expand: true,
         cwd: 'src',
         src: ['./css/*.css'],
-        dest: 'build'
+        dest: buildFolder
       },
       js: {
         expand: true,
         cwd: 'src',
         src: ['./js/**/*.js'],
-        dest: 'build'
+        dest: buildFolder
       },
       html: {
         expand: true,
         cwd: 'src',
         src: ['./*.html'],
-        dest: 'build'
-      },
-      json: {
-        expand: true,
-        cwd: 'src',
-        src: ['*.json', '_locales/**/*.json'],
-        dest: 'build'
+        dest: buildFolder
       }
     }
   });
@@ -170,11 +168,11 @@ module.exports = function(grunt) {
       'rollup',
       'sass',
       'copy:release',
-
-      'htmlmin',
       'uglify',
       'cssmin',
-      'imagemin'
+      'imagemin',
+      'htmlmin',
+      'inline'
     ]);
   });
 };

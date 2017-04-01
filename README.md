@@ -1,7 +1,7 @@
 # 使用ES6
 拥抱标准，摒弃`ADM`、`CMD`等模块加载polyfill库，减少代码体积。
 `class`, `arrow function`, `Promise`, `extend`的原生支持，
-更语法简洁、语义化，不需要实现一堆的语法糖，还可以根据语法树剔除没有调用的代码。
+语法更简洁、语义化，不需要实现一堆的语法糖，还可以根据语法树剔除没有调用到的代码。
 
 
 # 使用SASS
@@ -12,6 +12,7 @@ saas的语法就不介绍了，可以移步[saas summary](http://blog.suluf.com/
 ```shell
     |-- src
         |-- es6
+            |-- base        // 基础/通用模块
             |-- module      // 每个模块一个文件或者文件夹
             |-- index.js    // 入口文件，每个页面一个，引入其他模块并管理
         |-- sass

@@ -1,0 +1,73 @@
+// 此文件用于定义通用的样式
+// 此文件已经在base.scss中引入，其他文件不需要也不可引入
+
+ol {
+  list-style-position: inside;
+}
+
+.decimal {
+  list-style-type: decimal;
+}
+
+.upper-alpha {
+  list-style-type: upper-alpha;
+}
+
+.lower-alpha {
+  list-style-type: lower-alpha;
+}
+
+// 公共类
+.clearfix {
+  zoom: 1;
+}
+
+.clearfix:after {
+  content: " ";
+  display: block;
+  visibility: hidden;
+  clear: both;
+  height: 0;
+  line-height: 0;
+  font-size: 0;
+}
+
+.inline-block {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+
+  // for IE6、7
+  *zoom: 1;
+  *display: inline;
+}
+
+.ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.center {
+  text-align: center;
+}
+
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
+}
+
+.translucent {
+  opacity: .5;
+  filter: alpha(opacity=50);
+}
+
+$fontSize: (f12: 12px, f14: 14px, f16: 16px, f18: 18px, f20: 20px);
+@each $className, $size in $fontSize {
+  .#{$className} {
+    font-size: #{$size};
+  }
+}

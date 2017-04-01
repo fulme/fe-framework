@@ -3,22 +3,14 @@ module.exports = function(grunt) {
 
   var jsFiles = grunt.file.expand('src/es6/*.js');
   var htmlFiles = grunt.file.expand('src/*.html');
-  var buildFolder = 'build/';
   var htmlminFiles = {};
-  var htmlInlineOptions = {};
   var uglifyOptions = {};
   var rollupOptions = {};
+  var babelOptions = {};
 
   htmlFiles.forEach(function(file) {
     var filename = file.split('/').pop();
-    htmlminFiles[buildFolder + filename] = buildFolder + filename;
-    htmlInlineOptions[filename] = {
-      options: {
-        uglify: true
-      },
-      src: buildFolder + filename,
-      dist: buildFolder + filename
-    };
+    htmlminFiles['build/' + filename] = 'build/' + filename;
   });
 
   jsFiles.forEach(function(file) {
@@ -26,8 +18,9 @@ module.exports = function(grunt) {
     var uglifyFiles = {};
     var rollupFiles = {};
 
-    uglifyFiles[buildFolder + 'js/' + filename] = [buildFolder + 'js/' + filename];
-    rollupFiles['src/js/' + filename] = ['src/es6/' + filename];
+    uglifyFiles['build/js/' + filename] = ['build/js/' + filename];
+    rollupFiles['src/js/'+filename] = ['src/es6/'+filename];
+    babelOptions['build/js/' + filename] = 'build/js/' + filename;
 
     uglifyOptions[filename.replace('.js', '')] = {
       options: {
@@ -52,7 +45,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
-    clean: ['src/css', 'src/js', '*.zip'],
+    clean: ['build', 'src/css', 'src/js', '*.zip'],
 
     jshint: {
       all: ['Gruntfile.js', 'es6/**/*.js', 'js/**/*.js']
@@ -82,7 +75,7 @@ module.exports = function(grunt) {
 
     watch: {
       scripts: {
-        files: ['src/es6/*.js', 'src/es6/**/*.js', '../common/es6/**/*.js', 'Gruntfile.js'],
+        files: ['src/es6/*.js', 'src/es6/modules/**/*.js', '../common/es6/**/*.js', 'Gruntfile.js'],
         tasks: ['jshint', 'rollup', 'copy:js']
       },
       styles: {
@@ -92,6 +85,10 @@ module.exports = function(grunt) {
       html: {
         files: ['src/*.html'],
         tasks: ['copy:html']
+      },
+      json: {
+        files: ['src/**/*.json'],
+        tasks: ['copy:json']
       }
     },
 
@@ -101,9 +98,9 @@ module.exports = function(grunt) {
       build: {
         files: [{
           expand: true,
-          cwd: buildFolder + 'css',
+          cwd: 'build/css',
           src: '**/*.css',
-          dest: buildFolder + 'css'
+          dest: 'build/css'
         }]
       }
     },
@@ -112,9 +109,9 @@ module.exports = function(grunt) {
       dynamic: {
         files: [{
           expand: true,
-          cwd: buildFolder,
+          cwd: 'build',
           src: ['**/*.{png,jpg,gif,ico}'],
-          dest: buildFolder
+          dest: 'build/'
         }]
       }
     },
@@ -124,12 +121,13 @@ module.exports = function(grunt) {
         options: {
           removeComments: true,
           collapseWhitespace: true,
+          removeRedundantAttributes: true,
+          minifyJS: true,
+          minifyCSS: true
         },
         files: htmlminFiles
       }
     },
-
-    inline: htmlInlineOptions,
 
     copy: {
       release: {
@@ -141,26 +139,63 @@ module.exports = function(grunt) {
       css: {
         expand: true,
         cwd: 'src',
-        src: ['./css/*.css'],
-        dest: buildFolder
+        src: ['./**/*.css'],
+        dest: 'build'
       },
       js: {
         expand: true,
         cwd: 'src',
         src: ['./js/**/*.js'],
-        dest: buildFolder
+        dest: 'build'
       },
       html: {
         expand: true,
         cwd: 'src',
         src: ['./*.html'],
-        dest: buildFolder
+        dest: 'build'
+      },
+      json: {
+        expand: true,
+        cwd: 'src',
+        src: ['*.json', '_locales/**/*.json'],
+        dest: 'build'
+      },
+      pem: {
+        src: '<%= pkg.name %>.pem',
+        dest: 'build/key.pem'
+      }
+    },
+
+    babel: {
+      options: {
+        sourceMap: false,
+        presets: ['es2015']
+      },
+      dist: {
+        files: babelOptions
+      }
+    },
+
+    replace: {
+      debug: {
+        src: ['build/js/*.js', 'build/*.html'],
+        overwrite: true,
+        replacements: [{
+          from: /\/\*debug-start\*\/[^*]*\/\*debug-end\*\//g,
+          to: ''
+        }, {
+          from: /<!--debug-start-->[^!]*<!--debug-en-->/g,
+          to: ''
+        }, {
+          from: /__IS_DEBUG_MODE__ = true;/g,
+          to: '__IS_DEBUG_MODE__ = false;'
+        }]
       }
     }
   });
 
   grunt.registerTask('default', ['clean', 'rollup', 'sass', 'copy:release', 'watch']);
-  grunt.registerTask('build', function() {
+  grunt.registerTask('release', function() {
     grunt.task.run([
       'clean',
       'csslint',
@@ -168,11 +203,23 @@ module.exports = function(grunt) {
       'rollup',
       'sass',
       'copy:release',
-      'uglify',
-      'cssmin',
-      'imagemin',
+      'babel',
+      'replace',
+
       'htmlmin',
-      'inline'
+      'uglify',
+      'cssmin'
+    ]);
+  });
+  grunt.registerTask('debug', function() {
+    grunt.task.run([
+      'clean',
+      'csslint',
+      'jshint',
+      'rollup',
+      'sass',
+      'copy:release',
+      'babel'
     ]);
   });
 };

@@ -1,7 +1,8 @@
 @import "base/base";
+@import "base/variable";
 
 .wrapper {
-  width: 800px;
+  width: $mainWidth;
   height: 600px;
   margin: 100px auto;
   background: #088;

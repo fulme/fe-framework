@@ -11,6 +11,8 @@ saas的语法就不介绍了，可以移步[saas summary](http://blog.suluf.com/
 ## 代码结构
 ```shell
     |-- src
+        |-- lib             // 第三方库文件
+        |-- img             // 图片文件
         |-- es6
             |-- base        // 基础/通用模块
             |-- module      // 每个模块一个文件或者文件夹

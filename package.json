@@ -23,6 +23,7 @@
     "grunt-contrib-watch": "^0.6.1",
     "grunt-babel": "^6.0.0",
     "grunt-inline": "^0.3.6",
+    "rollup": "^0.25.2",
     "grunt-rollup": "^0.6.1",
     "grunt-shell": "^1.1.2",
     "grunt-crx": "^0.3.4",
